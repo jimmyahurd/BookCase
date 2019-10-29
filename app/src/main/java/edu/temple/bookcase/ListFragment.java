@@ -5,6 +5,7 @@ import android.net.Uri;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -58,6 +59,7 @@ public class ListFragment extends Fragment {
             }
         });
         view.setAdapter(adapter);
+        view.addItemDecoration(new DividerItemDecoration((Context) parent, DividerItemDecoration.VERTICAL));
         return view;
     }
 

@@ -1,6 +1,7 @@
 package edu.temple.bookcase;
 
 
+import android.content.Context;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -21,18 +22,36 @@ public class ViewPagerFragment extends Fragment {
     public static final String BOOKS_KEY = "books";
     ArrayList<String> books;
 
+    public static final String CURRENT_KEY = "current";
+    int current;
+
     ViewPager viewPager;
+
+    PageChangedInterface parent;
 
     public ViewPagerFragment() {
         // Required empty public constructor
     }
 
-    public static ViewPagerFragment newInstance(ArrayList<String> books){
+    public static ViewPagerFragment newInstance(ArrayList<String> books, int current){
         ViewPagerFragment fragment = new ViewPagerFragment();
         Bundle args = new Bundle();
         args.putStringArrayList(BOOKS_KEY, books);
+        args.putInt(CURRENT_KEY, current);
         fragment.setArguments(args);
         return fragment;
+    }
+
+    @Override
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+        if (context instanceof ListFragment.itemSelectedInterface) {
+            parent = (ViewPagerFragment.PageChangedInterface) context;
+        } else {
+            throw new RuntimeException(context.toString()
+                    + " must implement PageChangedInterface");
+        }
+        super.onAttach(context);
     }
 
     @Override
@@ -40,6 +59,7 @@ public class ViewPagerFragment extends Fragment {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
             books = getArguments().getStringArrayList(BOOKS_KEY);
+            current = getArguments().getInt(CURRENT_KEY);
         }
     }
 
@@ -50,7 +70,24 @@ public class ViewPagerFragment extends Fragment {
         viewPager = (ViewPager) inflater.inflate(R.layout.fragment_view_pager, container, false);
         viewPager.setAdapter(new DetailFragmentPagerAdapter(getChildFragmentManager(),
                 FragmentStatePagerAdapter.BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT));
+        viewPager.setCurrentItem(current);
+        viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {}
+            @Override
+            public void onPageScrollStateChanged(int state) {}
+            @Override
+            public void onPageSelected(int position) {
+                parent.pageChanged(position);
+            }
+        });
         return viewPager;
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        parent = null;
     }
 
     private class DetailFragmentPagerAdapter extends FragmentStatePagerAdapter {
@@ -68,6 +105,10 @@ public class ViewPagerFragment extends Fragment {
         public int getCount() {
             return books.size();
         }
+    }
+
+    public interface PageChangedInterface{
+        void pageChanged(int position);
     }
 
 }
