@@ -17,7 +17,6 @@ import java.util.ArrayList;
 
 public class ListFragment extends Fragment {
     private static final String LIST_KEY = "list";
-
     private ArrayList<String> list;
 
     private itemSelectedInterface parent;

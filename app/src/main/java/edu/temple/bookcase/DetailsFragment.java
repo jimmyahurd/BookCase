@@ -51,8 +51,8 @@ public class DetailsFragment extends Fragment {
         return view;
     }
 
-    public void changeItem(String item){
-        this.item = item;
+    public void DisplayBook(String title){
+        this.item = title;
         view.setText(item);
     }
 }
