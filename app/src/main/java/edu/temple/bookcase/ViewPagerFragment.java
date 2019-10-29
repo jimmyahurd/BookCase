@@ -17,7 +17,6 @@ import android.view.ViewGroup;
 import java.util.ArrayList;
 
 
-//use fragmentStatePagerAdapter
 public class ViewPagerFragment extends Fragment {
     public static final String BOOKS_KEY = "books";
     ArrayList<String> books;
@@ -68,8 +67,10 @@ public class ViewPagerFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         viewPager = (ViewPager) inflater.inflate(R.layout.fragment_view_pager, container, false);
-        viewPager.setAdapter(new DetailFragmentPagerAdapter(getChildFragmentManager(),
-                FragmentStatePagerAdapter.BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT));
+        viewPager.setAdapter(new DetailFragmentPagerAdapter(
+                getChildFragmentManager(),
+                FragmentStatePagerAdapter.BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT,
+                books));
         viewPager.setCurrentItem(current);
         viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
@@ -91,14 +92,23 @@ public class ViewPagerFragment extends Fragment {
     }
 
     private class DetailFragmentPagerAdapter extends FragmentStatePagerAdapter {
+        ArrayList<DetailsFragment> fragments;
 
-        public DetailFragmentPagerAdapter(@NonNull FragmentManager fm, int behavior) {
+        public DetailFragmentPagerAdapter(@NonNull FragmentManager fm, int behavior, ArrayList<String> books) {
             super(fm, behavior);
+            createFragments(books);
+        }
+
+        private void createFragments(ArrayList<String> books){
+            fragments = new ArrayList<DetailsFragment>();
+            for(int i = 0; i < books.size(); i++){
+                fragments.add(DetailsFragment.newInstance(books.get(i)));
+            }
         }
 
         @Override
         public Fragment getItem(int position) {
-            return DetailsFragment.newInstance(books.get(position));
+            return fragments.get(position);
         }
 
         @Override
