@@ -18,18 +18,19 @@ import java.util.ArrayList;
 
 public class ListFragment extends Fragment {
     private static final String LIST_KEY = "list";
-    private ArrayList<String> list;
+    private ArrayList<Book> list;
 
     private itemSelectedInterface parent;
+    ListFragmentAdapter adapter;
 
     public ListFragment() {
         // Required empty public constructor
     }
 
-    public static ListFragment newInstance(ArrayList<String> items) {
+    public static ListFragment newInstance(ArrayList<Book> items) {
         ListFragment fragment = new ListFragment();
         Bundle args = new Bundle();
-        args.putStringArrayList(LIST_KEY, items);
+        args.putParcelableArrayList(LIST_KEY, items);
         fragment.setArguments(args);
         return fragment;
     }
@@ -38,7 +39,7 @@ public class ListFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            list = getArguments().getStringArrayList(LIST_KEY);
+            list = getArguments().getParcelableArrayList(LIST_KEY);
         }
     }
 
@@ -51,7 +52,7 @@ public class ListFragment extends Fragment {
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager((Context) parent);
         view.setLayoutManager(layoutManager);
 
-        ListFragmentAdapter adapter = new ListFragmentAdapter(list);
+        adapter = new ListFragmentAdapter(getBookTitles());
         adapter.setOnItemClickListener(new ListFragmentAdapter.ClickListener() {
             @Override
             public void onItemClick(int position, View v) {
@@ -61,6 +62,14 @@ public class ListFragment extends Fragment {
         view.setAdapter(adapter);
         view.addItemDecoration(new DividerItemDecoration((Context) parent, DividerItemDecoration.VERTICAL));
         return view;
+    }
+
+    private ArrayList<String> getBookTitles(){
+        ArrayList<String> titles = new ArrayList<>(list.size());
+        for(int i = 0; i < list.size(); i++){
+            titles.add(list.get(i).getTitle());
+        }
+        return titles;
     }
 
     @Override
@@ -78,6 +87,14 @@ public class ListFragment extends Fragment {
     public void onDetach() {
         super.onDetach();
         parent = null;
+    }
+
+    public void updateAdapter(){
+        adapter.notifyDataSetChanged();
+    }
+
+    public ArrayList<Book> getBooks(){
+        return list;
     }
 
     public interface itemSelectedInterface {

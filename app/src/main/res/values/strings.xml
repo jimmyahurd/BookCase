@@ -1,15 +1,4 @@
 <resources>
     <string name="app_name">BookCase</string>
-    <string-array name="books">
-        <item>Don Quixote</item>
-        <item>A Tale of Two Cities</item>
-        <item>The Lord of the Rings</item>
-        <item>The Little Prince</item>
-        <item>Harry Potter and the Sorcerer\'s Stone</item>
-        <item>And Then There Were None</item>
-        <item>The Da Vinci Code</item>
-        <item>The Hobbit</item>
-        <item>She: A History of Adventure</item>
-        <item>The Lion, the Witch, and the Wardrobe</item>
-    </string-array>
+    <string name="url">https://kamorris.com/lab/audlib/booksearch.php</string>
 </resources>
