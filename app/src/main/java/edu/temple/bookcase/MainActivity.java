@@ -13,6 +13,7 @@ import android.os.Message;
 import android.os.PersistableBundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.EditText;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -33,6 +34,8 @@ public class MainActivity extends AppCompatActivity implements ListFragment.item
     Fragment listFragment;
     Fragment viewPagerFragment;
 
+    EditText query;
+
     int currentBook;
     public static final String CURRENT_BOOK_KEY = "current";
 
@@ -45,6 +48,8 @@ public class MainActivity extends AppCompatActivity implements ListFragment.item
         public boolean handleMessage(@NonNull Message msg) {
             Log.d(TAG, "Books obtained");
             try {
+                while(books.size() > 0) {books.remove(0);}
+                notifyFragments();
                 JSONArray jsonArray = new JSONArray((String) msg.obj);
                 int i = 0;
                 JSONObject jsonObject;
@@ -53,10 +58,7 @@ public class MainActivity extends AppCompatActivity implements ListFragment.item
                 }
             }catch (JSONException e){}
             Log.d(TAG, "Obtained " + books.size() + " books");
-            if(viewPagerFragment instanceof ViewPagerFragment)
-                ((ViewPagerFragment)viewPagerFragment).updateAdapter();
-            else if(listFragment instanceof ListFragment)
-                ((ListFragment)listFragment).updateAdapter();
+            notifyFragments();
             return false;
         }
     });
@@ -79,6 +81,7 @@ public class MainActivity extends AppCompatActivity implements ListFragment.item
         else
             singlePane = false;
 
+        books = new ArrayList<>();
         getBooks();
 
         if(singlePane){
@@ -111,6 +114,12 @@ public class MainActivity extends AppCompatActivity implements ListFragment.item
                         .commit();
             }
         }
+
+        query = findViewById(R.id.query);
+
+        findViewById(R.id.searchButton).setOnClickListener(v ->{
+            queryForBooks(getResources().getString(R.string.url) + "?search=" + query.getText());
+        });
     }
 
     private void getBooks(){
@@ -135,7 +144,6 @@ public class MainActivity extends AppCompatActivity implements ListFragment.item
     private void queryForBooks(final String search){
         Log.d(TAG, "Querying for books");
         Log.d(TAG, search);
-        books = new ArrayList<>();
         new Thread(){
             public void run(){
                 Log.d(TAG, "Thread started");
@@ -157,6 +165,16 @@ public class MainActivity extends AppCompatActivity implements ListFragment.item
                 }
             }
         }.start();
+    }
+
+    public void notifyFragments(){
+        if(viewPagerFragment instanceof ViewPagerFragment)
+            ((ViewPagerFragment)viewPagerFragment).updateAdapter();
+        else if(listFragment instanceof ListFragment) {
+            ((ListFragment) listFragment).updateAdapter();
+            if(books.size() > 0)
+                ((DetailsFragment)detailFragment).DisplayBook(books.get(0));
+        }
     }
 
     @Override

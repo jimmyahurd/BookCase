@@ -67,9 +67,11 @@ public class DetailsFragment extends Fragment {
     }
 
     private void UpdateView(){
-        Picasso.get().load(book.getCoverURL()).into(cover);
-        title.setText("Title: " + book.getTitle());
-        author.setText("Author: " + book.getAuthor());
-        published.setText("Published: " + book.getPublished());
+        if(book != null) {
+            Picasso.get().load(book.getCoverURL()).into(cover);
+            title.setText("Title: " + book.getTitle());
+            author.setText("Author: " + book.getAuthor());
+            published.setText("Published: " + book.getPublished());
+        }
     }
 }

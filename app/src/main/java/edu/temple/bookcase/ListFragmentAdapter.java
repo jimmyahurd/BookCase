@@ -12,7 +12,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import java.util.ArrayList;
 
 public class ListFragmentAdapter extends RecyclerView.Adapter<ListFragmentAdapter.ViewHolder> {
-    private ArrayList<String> items;
+    private ArrayList<Book> books;
 
     private static ClickListener clickListener;
 
@@ -37,8 +37,8 @@ public class ListFragmentAdapter extends RecyclerView.Adapter<ListFragmentAdapte
         }
     }
 
-    public ListFragmentAdapter(ArrayList<String> items){
-        this.items = items;
+    public ListFragmentAdapter(ArrayList<Book> books){
+        this.books = books;
     }
 
     @NonNull
@@ -52,12 +52,12 @@ public class ListFragmentAdapter extends RecyclerView.Adapter<ListFragmentAdapte
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        holder.bind(items.get(position), position);
+        holder.bind(books.get(position).getTitle(), position);
     }
 
     @Override
     public int getItemCount() {
-        return items.size();
+        return books.size();
     }
 
     public void setOnItemClickListener(ClickListener clickListener){

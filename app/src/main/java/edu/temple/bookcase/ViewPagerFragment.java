@@ -101,6 +101,10 @@ public class ViewPagerFragment extends Fragment {
         return books;
     }
 
+    public void updateAdapter(){
+        adapter.notifyDataSetChanged();
+    }
+
     private class DetailFragmentPagerAdapter extends FragmentStatePagerAdapter {
         ArrayList<Book> books;
 
@@ -118,10 +122,11 @@ public class ViewPagerFragment extends Fragment {
         public int getCount() {
             return books.size();
         }
-    }
 
-    public void updateAdapter(){
-        adapter.notifyDataSetChanged();
+        @Override
+        public int getItemPosition(@NonNull Object object) {
+            return POSITION_NONE;
+        }
     }
 
     public interface PageChangedInterface{
