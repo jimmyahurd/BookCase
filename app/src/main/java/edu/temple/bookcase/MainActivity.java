@@ -209,6 +209,8 @@ public class MainActivity extends AppCompatActivity implements ListFragment.item
         super.onStop();
         unbindService(connection);
         playerBound = false;
+        if(currentlyPlaying == null)
+            stopService(new Intent(this, AudiobookService.class));
     }
 
     private void getBooks(){
