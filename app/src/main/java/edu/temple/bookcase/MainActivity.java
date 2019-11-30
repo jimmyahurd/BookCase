@@ -8,16 +8,13 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
-import android.os.PersistableBundle;
 import android.util.Log;
-import android.view.View;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
@@ -27,11 +24,8 @@ import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 import edu.temple.audiobookplayer.AudiobookService;
 
@@ -47,6 +41,9 @@ public class MainActivity extends AppCompatActivity implements ListFragment.item
     public static final String CURRENTLY_PLAYING_KEY = "playing";
     SeekBar progressBar;
     TextView nowPlaying;
+
+    ImageButton playPause;
+    boolean playing;
 
     EditText query;
 
@@ -105,6 +102,8 @@ public class MainActivity extends AppCompatActivity implements ListFragment.item
             currentlyPlaying = null;
         }
 
+        playing = true;
+
         if(findViewById(R.id.ListContainer) == null)
             singlePane = true;
         else
@@ -150,9 +149,18 @@ public class MainActivity extends AppCompatActivity implements ListFragment.item
             queryForBooks(getResources().getString(R.string.url) + "?search=" + query.getText());
         });
 
-        findViewById(R.id.pauseButton).setOnClickListener(v ->{
-            if(playerBound){
+        playPause = findViewById(R.id.playPauseButton);
+
+        playPause.setOnClickListener(v ->{
+            if(playerBound && currentlyPlaying != null){
                 player.pause();
+                if(playing) {
+                    playPause.setImageResource(R.mipmap.play);
+                    playing = false;
+                }else{
+                    playPause.setImageResource(R.mipmap.pause);
+                    playing = true;
+                }
             }
         });
 

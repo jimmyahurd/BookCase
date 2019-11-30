@@ -9,7 +9,7 @@
     <FrameLayout
         android:id="@+id/DetailsContainer"
         android:layout_width="500dp"
-        android:layout_height="220dp"
+        android:layout_height="200dp"
         app:layout_constraintStart_toEndOf="@+id/ListContainer"
         app:layout_constraintTop_toBottomOf="@+id/query"></FrameLayout>
 
@@ -40,23 +40,24 @@
         app:layout_constraintStart_toEndOf="@+id/query"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <Button
+    <ImageButton
         android:id="@+id/stopButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="17dp"
-        android:layout_marginTop="5dp"
-        android:text="@string/stopButton"
+        android:layout_width="35dp"
+        android:layout_height="35dp"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="10dp"
+        android:background="@drawable/stop"
         app:layout_constraintStart_toEndOf="@+id/nowPlaying"
         app:layout_constraintTop_toBottomOf="@+id/progressBar" />
 
-    <Button
-        android:id="@+id/pauseButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="30dp"
-        android:layout_marginTop="5dp"
-        android:text="@string/pauseButton"
+    <ImageButton
+        android:id="@+id/playPauseButton"
+        android:layout_width="35dp"
+        android:layout_height="35dp"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="10dp"
+        android:background="@drawable/white_background"
+        android:src="@mipmap/pause"
         app:layout_constraintStart_toEndOf="@+id/stopButton"
         app:layout_constraintTop_toBottomOf="@+id/progressBar" />
 
@@ -79,7 +80,7 @@
 
     <TextView
         android:id="@+id/nowPlaying"
-        android:layout_width="234dp"
+        android:layout_width="375dp"
         android:layout_height="48dp"
         android:layout_marginStart="26dp"
         android:layout_marginTop="5dp"
