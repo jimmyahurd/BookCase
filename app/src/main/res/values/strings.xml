@@ -2,4 +2,8 @@
     <string name="app_name">BookCase</string>
     <string name="url">https://kamorris.com/lab/audlib/booksearch.php</string>
     <string name="searchButton">Search</string>
+    <string name="playButton">Play</string>
+    <string name="stopButton">Stop</string>
+    <string name="pauseButton">Pause</string>
+    <string name="nowPlaying">Now Playing:\n</string>
 </resources>

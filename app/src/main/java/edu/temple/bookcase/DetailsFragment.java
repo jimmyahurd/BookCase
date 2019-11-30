@@ -1,6 +1,7 @@
 package edu.temple.bookcase;
 
 
+import android.content.Context;
 import android.os.Bundle;
 
 import androidx.annotation.Nullable;
@@ -23,10 +24,16 @@ public class DetailsFragment extends Fragment {
 
     private Book book;
 
+    private BookPlayedInterface parent;
+
     private ImageView cover;
     private TextView title;
     private TextView author;
     private TextView published;
+
+    private static String DisplayTitle = "Title: ";
+    private static String DisplayAuthor = "Author: ";
+    private static String DisplayPublishedYear = "Published: ";
 
     public DetailsFragment() {
         // Required empty public constructor
@@ -57,8 +64,28 @@ public class DetailsFragment extends Fragment {
         title = view.findViewById(R.id.title);
         author = view.findViewById(R.id.author);
         published = view.findViewById(R.id.published);
+        view.findViewById(R.id.playButton).setOnClickListener(v -> {
+            parent.playPressed(book);
+        });
         UpdateView();
         return view;
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        if (context instanceof BookPlayedInterface) {
+            parent = (BookPlayedInterface) context;
+        } else {
+            throw new RuntimeException(context.toString()
+                    + " must implement BookPlayedInterface");
+        }
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        parent = null;
     }
 
     public void DisplayBook(Book book){
@@ -69,9 +96,13 @@ public class DetailsFragment extends Fragment {
     private void UpdateView(){
         if(book != null) {
             Picasso.get().load(book.getCoverURL()).into(cover);
-            title.setText("Title: " + book.getTitle());
-            author.setText("Author: " + book.getAuthor());
-            published.setText("Published: " + book.getPublished());
+            title.setText(DisplayTitle + book.getTitle());
+            author.setText(DisplayAuthor + book.getAuthor());
+            published.setText(DisplayPublishedYear + book.getPublished());
         }
+    }
+
+    public interface BookPlayedInterface{
+        void playPressed(Book book);
     }
 }

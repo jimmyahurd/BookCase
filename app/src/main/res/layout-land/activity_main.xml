@@ -9,9 +9,9 @@
     <FrameLayout
         android:id="@+id/DetailsContainer"
         android:layout_width="500dp"
-        android:layout_height="300dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/ListContainer"></FrameLayout>
+        android:layout_height="220dp"
+        app:layout_constraintStart_toEndOf="@+id/ListContainer"
+        app:layout_constraintTop_toBottomOf="@+id/query"></FrameLayout>
 
     <FrameLayout
         android:id="@+id/ListContainer"
@@ -24,7 +24,7 @@
     <EditText
         android:id="@+id/query"
         android:layout_width="400dp"
-        android:layout_height="0dp"
+        android:layout_height="50dp"
         android:ems="10"
         android:inputType="textPersonName"
         app:layout_constraintBottom_toTopOf="@+id/DetailsContainer"
@@ -34,10 +34,56 @@
     <Button
         android:id="@+id/searchButton"
         android:layout_width="100dp"
-        android:layout_height="0dp"
+        android:layout_height="50dp"
         android:text="@string/searchButton"
         app:layout_constraintBottom_toTopOf="@+id/DetailsContainer"
         app:layout_constraintStart_toEndOf="@+id/query"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
+        android:id="@+id/stopButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="17dp"
+        android:layout_marginTop="5dp"
+        android:text="@string/stopButton"
+        app:layout_constraintStart_toEndOf="@+id/nowPlaying"
+        app:layout_constraintTop_toBottomOf="@+id/progressBar" />
+
+    <Button
+        android:id="@+id/pauseButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="30dp"
+        android:layout_marginTop="5dp"
+        android:text="@string/pauseButton"
+        app:layout_constraintStart_toEndOf="@+id/stopButton"
+        app:layout_constraintTop_toBottomOf="@+id/progressBar" />
+
+    <SeekBar
+        android:id="@+id/progressBar"
+        android:layout_width="487dp"
+        android:layout_height="17dp"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="5dp"
+        app:layout_constraintStart_toEndOf="@+id/ListContainer"
+        app:layout_constraintTop_toBottomOf="@+id/divider2" />
+
+    <View
+        android:id="@+id/divider2"
+        android:layout_width="600dp"
+        android:layout_height="1dp"
+        android:background="?android:attr/listDivider"
+        app:layout_constraintStart_toEndOf="@+id/ListContainer"
+        app:layout_constraintTop_toBottomOf="@+id/DetailsContainer" />
+
+    <TextView
+        android:id="@+id/nowPlaying"
+        android:layout_width="234dp"
+        android:layout_height="48dp"
+        android:layout_marginStart="26dp"
+        android:layout_marginTop="5dp"
+        app:layout_constraintStart_toEndOf="@+id/ListContainer"
+        app:layout_constraintTop_toBottomOf="@+id/progressBar" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

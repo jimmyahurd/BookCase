@@ -4,16 +4,22 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 
+import android.content.ComponentName;
 import android.content.Context;
+import android.content.Intent;
+import android.content.ServiceConnection;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.IBinder;
 import android.os.Message;
 import android.os.PersistableBundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.SeekBar;
+import android.widget.TextView;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -27,12 +33,20 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements ListFragment.itemSelectedInterface, ViewPagerFragment.PageChangedInterface {
+import edu.temple.audiobookplayer.AudiobookService;
+
+public class MainActivity extends AppCompatActivity implements ListFragment.itemSelectedInterface,
+        ViewPagerFragment.PageChangedInterface, DetailsFragment.BookPlayedInterface {
     ArrayList<Book> books;
 
     Fragment detailFragment;
     Fragment listFragment;
     Fragment viewPagerFragment;
+
+    Book currentlyPlaying;
+    public static final String CURRENTLY_PLAYING_KEY = "playing";
+    SeekBar progressBar;
+    TextView nowPlaying;
 
     EditText query;
 
@@ -40,6 +54,9 @@ public class MainActivity extends AppCompatActivity implements ListFragment.item
     public static final String CURRENT_BOOK_KEY = "current";
 
     boolean singlePane;
+
+    AudiobookService.MediaControlBinder player;
+    boolean playerBound = false;
 
     final String TAG = "MainActivity";
 
@@ -63,6 +80,16 @@ public class MainActivity extends AppCompatActivity implements ListFragment.item
         }
     });
 
+    Handler bookProgressHandler = new Handler(new Handler.Callback() {
+        @Override
+        public boolean handleMessage(@NonNull Message msg) {
+            AudiobookService.BookProgress progress = (AudiobookService.BookProgress) msg.obj;
+            if(progress != null)
+                progressBar.setProgress(progress.getProgress());
+            return false;
+        }
+    });
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -70,10 +97,12 @@ public class MainActivity extends AppCompatActivity implements ListFragment.item
 
         if(savedInstanceState != null) {
             currentBook = savedInstanceState.getInt(CURRENT_BOOK_KEY);
+            currentlyPlaying = savedInstanceState.getParcelable(CURRENTLY_PLAYING_KEY);
             Log.d(TAG, "Obtained book number " + currentBook);
         }
         else {
             currentBook = 0;
+            currentlyPlaying = null;
         }
 
         if(findViewById(R.id.ListContainer) == null)
@@ -120,6 +149,58 @@ public class MainActivity extends AppCompatActivity implements ListFragment.item
         findViewById(R.id.searchButton).setOnClickListener(v ->{
             queryForBooks(getResources().getString(R.string.url) + "?search=" + query.getText());
         });
+
+        findViewById(R.id.pauseButton).setOnClickListener(v ->{
+            if(playerBound){
+                player.pause();
+            }
+        });
+
+        findViewById(R.id.stopButton).setOnClickListener(v ->{
+            if(playerBound){
+                player.stop();
+                progressBar.setProgress(0);
+                nowPlaying.setText("");
+                currentlyPlaying = null;
+            }
+        });
+
+        progressBar = findViewById(R.id.progressBar);
+        progressBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                if(fromUser){
+                    if(playerBound && player.isPlaying()){
+                        player.seekTo(progress);
+                    }
+                }
+            }
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {}
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {}
+        });
+
+        nowPlaying = findViewById(R.id.nowPlaying);
+
+        if(currentlyPlaying != null) {
+            progressBar.setMax(currentlyPlaying.getDuration());
+            nowPlaying.setText(getString(R.string.nowPlaying) + currentlyPlaying.getTitle());
+        }
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        Intent intent = new Intent(this, AudiobookService.class);
+        bindService(intent, connection, Context.BIND_AUTO_CREATE);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        unbindService(connection);
+        playerBound = false;
     }
 
     private void getBooks(){
@@ -189,9 +270,38 @@ public class MainActivity extends AppCompatActivity implements ListFragment.item
     }
 
     @Override
+    public void playPressed(Book book) {
+        if(!player.isPlaying()) {
+            startService(new Intent(this, AudiobookService.class));
+            player.play(book.getId());
+            currentlyPlaying = book;
+            progressBar.setMax(book.getDuration());
+            nowPlaying.setText(getString(R.string.nowPlaying) + currentlyPlaying.getTitle());
+        }
+    }
+
+    @Override
     protected void onSaveInstanceState(@NonNull Bundle outState) {
         outState.putInt(CURRENT_BOOK_KEY, currentBook);
+        if(currentlyPlaying != null)
+            outState.putParcelable(CURRENTLY_PLAYING_KEY, currentlyPlaying);
+        else
+            outState.putParcelable(CURRENTLY_PLAYING_KEY, null);
         Log.d(TAG, "Saved book number " + currentBook);
         super.onSaveInstanceState(outState);
     }
+
+    private ServiceConnection connection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            player = (AudiobookService.MediaControlBinder) service;
+            player.setProgressHandler(bookProgressHandler);
+            playerBound = true;
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            playerBound = false;
+        }
+    };
 }
