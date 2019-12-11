@@ -165,6 +165,7 @@ public class MainActivity extends AppCompatActivity implements ListFragment.item
         playPause.setOnClickListener(v ->{
             if(playerBound && currentlyPlaying != null){
                 player.pause();
+                currentlyPlaying.setProgress(progressBar.getProgress());
                 if(playing) {
                     playPause.setImageResource(R.mipmap.play);
                     playing = false;
@@ -176,6 +177,7 @@ public class MainActivity extends AppCompatActivity implements ListFragment.item
         });
 
         findViewById(R.id.stopButton).setOnClickListener(v ->{
+            currentlyPlaying.setProgress(0);
             stopAudio();
         });
 
@@ -337,6 +339,7 @@ public class MainActivity extends AppCompatActivity implements ListFragment.item
         if(!player.isPlaying()) {
             startService(new Intent(this, AudiobookService.class));
         }else{
+            currentlyPlaying.setProgress(progressBar.getProgress());
             stopAudio();
         }
         playBook(book);
@@ -356,7 +359,6 @@ public class MainActivity extends AppCompatActivity implements ListFragment.item
     private void stopAudio(){
         if(playerBound){
             player.stop();
-            currentlyPlaying.setProgress(progressBar.getProgress());
             progressBar.setProgress(0);
             nowPlaying.setText("");
             currentlyPlaying = null;
