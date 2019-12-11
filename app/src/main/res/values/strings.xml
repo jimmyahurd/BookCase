@@ -10,4 +10,13 @@
     <string name="deleteButton">Delete</string>
     <string name="booksFile">books</string>
     <string name="audioURL">https://kamorris.com/lab/audlib/download.php?id=</string>
+
+    <string name="id">book_id</string>
+    <string name="title">title</string>
+    <string name="author">author</string>
+    <string name="duration">duration</string>
+    <string name="published">published</string>
+    <string name="cover">cover_url</string>
+    <string name="downloaded">downloaded</string>
+    <string name="progress">progress</string>
 </resources>

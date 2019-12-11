@@ -84,6 +84,7 @@ public class MainActivity extends AppCompatActivity implements ListFragment.item
                 }
             }catch (JSONException e){}
             //Log.d(TAG, "Obtained " + books.size() + " books");
+            checkDownloads();
             notifyFragments();
             return false;
         }
@@ -215,10 +216,6 @@ public class MainActivity extends AppCompatActivity implements ListFragment.item
     @Override
     protected void onStop() {
         super.onStop();
-        unbindService(connection);
-        playerBound = false;
-        if(currentlyPlaying == null)
-            stopService(new Intent(this, AudiobookService.class));
 
         try {
             Log.e(TAG, "Writing to file");
@@ -229,11 +226,17 @@ public class MainActivity extends AppCompatActivity implements ListFragment.item
             BufferedWriter writer = new BufferedWriter(new FileWriter(path));
 
             JSONArray jsonArray = new JSONArray();
+            if(currentlyPlaying == null)
+                jsonArray.put(false);
+            else{
+                jsonArray.put(true);
+                jsonArray.put(currentlyPlaying.toJSON());
+            }
             for(int i = 0; i < books.size(); i++) {
                 jsonArray.put(books.get(i).toJSON());
             }
             writer.write(jsonArray.toString());
-            Log.wtf("wrote", jsonArray.toString(6));
+            //Log.e("wrote", jsonArray.toString(6));
 
             //writer.write("test input");
             writer.flush();
@@ -244,10 +247,13 @@ public class MainActivity extends AppCompatActivity implements ListFragment.item
         } catch (JSONException e) {
             e.printStackTrace();
         }
+        unbindService(connection);
+        playerBound = false;
     }
 
     private void getBooks(){
         File file = new File(getFilesDir(), getString(R.string.booksFile));
+
         if(file.length() == 0)
             Log.e(TAG, "file is empty");
         else {
@@ -262,10 +268,15 @@ public class MainActivity extends AppCompatActivity implements ListFragment.item
                         builder.append(response);
                     }
                     JSONArray jsonArray = new JSONArray(builder.toString());
-                    for (int i = 0; i < jsonArray.length(); i++) {
+                    int i = 1;
+                    if((boolean)jsonArray.get(0)) {
+                        currentlyPlaying = new Book(jsonArray.getJSONObject(i), true);
+                        i++;
+                    }
+                    for (; i < jsonArray.length(); i++) {
                         books.add(new Book(jsonArray.getJSONObject(i), true));
-                        if(books.get(i).isDownloaded())
-                            books.get(i).setAudio(new File(getExternalFilesDir(DOWNLOAD_SERVICE), books.get(i).getTitle()));
+                        if(books.get(books.size() - 1).isDownloaded())
+                            books.get(books.size() - 1).setAudio(new File(getExternalFilesDir(DOWNLOAD_SERVICE), books.get(books.size() - 1).getTitle()));
                     }
                     Log.d(TAG, "Grabbed books from file");
 
@@ -313,13 +324,23 @@ public class MainActivity extends AppCompatActivity implements ListFragment.item
         }.start();
     }
 
-    public void notifyFragments(){
+    private void notifyFragments(){
         if(viewPagerFragment instanceof ViewPagerFragment)
             ((ViewPagerFragment)viewPagerFragment).updateAdapter();
         else if(listFragment instanceof ListFragment) {
             ((ListFragment) listFragment).updateAdapter();
             if(books.size() > 0)
                 ((DetailsFragment)detailFragment).DisplayBook(books.get(0));
+        }
+    }
+
+    private void checkDownloads(){
+        File audio;
+        for(int i = 0; i < books.size(); i++){
+            audio = new File(getExternalFilesDir(DOWNLOAD_SERVICE), books.get(i).getTitle());
+            if(audio.exists()){
+                books.get(i).setAudio(audio);
+            }
         }
     }
 
@@ -362,6 +383,7 @@ public class MainActivity extends AppCompatActivity implements ListFragment.item
             progressBar.setProgress(0);
             nowPlaying.setText("");
             currentlyPlaying = null;
+            stopService(new Intent(this, AudiobookService.class));
         }
     }
 

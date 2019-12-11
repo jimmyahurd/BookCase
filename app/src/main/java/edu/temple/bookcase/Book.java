@@ -12,6 +12,15 @@ import java.io.FileDescriptor;
 import java.io.Serializable;
 
 public class Book implements Parcelable, Serializable {
+    public static final String ID = "book_id";
+    public static final String TITLE = "title";
+    public static final String AUTHOR = "author";
+    public static final String DURATION = "duration";
+    public static final String PUBLISHED = "published";
+    public static final String COVER = "cover_url";
+    public static final String DOWNLOADED = "downloaded";
+    public static final String PROGRESS = "progress";
+
     private int id;
     private String title;
     private String author;
@@ -36,15 +45,15 @@ public class Book implements Parcelable, Serializable {
     public Book(JSONObject book, boolean fromFile){
         try {
             //Log.d("book", "book " + book.getString("title") + " obtained");
-            id = book.getInt("book_id");
-            title = book.getString("title");
-            author = book.getString("author");
-            duration = book.getInt("duration");
-            published = book.getInt("published");
-            coverURL = book.getString("cover_url");
+            id = book.getInt(ID);
+            title = book.getString(TITLE);
+            author = book.getString(AUTHOR);
+            duration = book.getInt(DURATION);
+            published = book.getInt(PUBLISHED);
+            coverURL = book.getString(COVER);
             if(fromFile){
-                downloaded = book.getBoolean("downloaded");
-                progress = book.getInt("progress");
+                downloaded = book.getBoolean(DOWNLOADED);
+                progress = book.getInt(PROGRESS);
             }else{
                 progress = 0;
                 downloaded = false;
@@ -141,14 +150,14 @@ public class Book implements Parcelable, Serializable {
     public JSONObject toJSON() throws JSONException {
         JSONObject toReturn = new JSONObject();
         //Log.d("BOOK", "making JSON object");
-        toReturn.put("book_id", id);
-        toReturn.put("title", title);
-        toReturn.put("author", author);
-        toReturn.put("duration", duration);
-        toReturn.put("published", published);
-        toReturn.put("cover_url", coverURL);
-        toReturn.put("downloaded", downloaded);
-        toReturn.put("progress", progress);
+        toReturn.put(ID, id);
+        toReturn.put(TITLE, title);
+        toReturn.put(AUTHOR, author);
+        toReturn.put(DURATION, duration);
+        toReturn.put(PUBLISHED, published);
+        toReturn.put(COVER, coverURL);
+        toReturn.put(DOWNLOADED, downloaded);
+        toReturn.put(PROGRESS, progress);
         //Log.d("BOOK", "made JSON object");
         //Log.d("made", toReturn.toString());
         return toReturn;
