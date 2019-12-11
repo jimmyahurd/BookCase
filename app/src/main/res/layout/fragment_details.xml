@@ -71,4 +71,14 @@
         app:layout_constraintStart_toEndOf="@+id/author"
         app:layout_constraintTop_toBottomOf="@+id/cover"
         app:layout_constraintVertical_weight="1" />
+
+    <Button
+        android:id="@+id/downloadDelete"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="40dp"
+        android:layout_marginEnd="20dp"
+        android:text="@string/downloadButton"
+        app:layout_constraintEnd_toStartOf="@+id/author"
+        app:layout_constraintTop_toBottomOf="@+id/cover" />
 </androidx.constraintlayout.widget.ConstraintLayout>

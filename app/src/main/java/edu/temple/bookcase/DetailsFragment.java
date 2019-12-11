@@ -10,6 +10,7 @@ import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -24,7 +25,7 @@ public class DetailsFragment extends Fragment {
 
     private Book book;
 
-    private BookPlayedInterface parent;
+    private BookInterface parent;
 
     private ImageView cover;
     private TextView title;
@@ -67,6 +68,12 @@ public class DetailsFragment extends Fragment {
         view.findViewById(R.id.playButton).setOnClickListener(v -> {
             parent.playPressed(book);
         });
+        Button downloadDelete = view.findViewById(R.id.downloadDelete);
+        downloadDelete.setText(getString(book.isDownloaded()? R.string.deleteButton : R.string.downloadButton));
+        downloadDelete.setOnClickListener(v -> {
+            downloadDelete.setText(getString(book.isDownloaded()? R.string.downloadButton : R.string.deleteButton));
+            parent.downloadOrDelete(book);
+        });
         UpdateView();
         return view;
     }
@@ -74,11 +81,11 @@ public class DetailsFragment extends Fragment {
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        if (context instanceof BookPlayedInterface) {
-            parent = (BookPlayedInterface) context;
+        if (context instanceof BookInterface) {
+            parent = (BookInterface) context;
         } else {
             throw new RuntimeException(context.toString()
-                    + " must implement BookPlayedInterface");
+                    + " must implement BookInterface");
         }
     }
 
@@ -102,7 +109,8 @@ public class DetailsFragment extends Fragment {
         }
     }
 
-    public interface BookPlayedInterface{
+    public interface BookInterface {
         void playPressed(Book book);
+        void downloadOrDelete(Book book);
     }
 }

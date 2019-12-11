@@ -8,10 +8,12 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
+import android.os.Parcel;
 import android.util.Log;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -23,14 +25,26 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.NotSerializableException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.OutputStreamWriter;
 import java.net.URL;
 import java.util.ArrayList;
 
 import edu.temple.audiobookplayer.AudiobookService;
 
 public class MainActivity extends AppCompatActivity implements ListFragment.itemSelectedInterface,
-        ViewPagerFragment.PageChangedInterface, DetailsFragment.BookPlayedInterface {
+        ViewPagerFragment.PageChangedInterface, DetailsFragment.BookInterface {
     ArrayList<Book> books;
 
     Fragment detailFragment;
@@ -60,18 +74,16 @@ public class MainActivity extends AppCompatActivity implements ListFragment.item
     Handler queryHandler = new Handler(new Handler.Callback() {
         @Override
         public boolean handleMessage(@NonNull Message msg) {
-            Log.d(TAG, "Books obtained");
+            //Log.d(TAG, "Books obtained");
             try {
                 while(books.size() > 0) {books.remove(0);}
                 notifyFragments();
                 JSONArray jsonArray = new JSONArray((String) msg.obj);
-                int i = 0;
-                JSONObject jsonObject;
-                while((jsonObject = jsonArray.getJSONObject(i++)) != null) {
-                    books.add(new Book(jsonObject));
+                for(int i = 0; i < jsonArray.length(); i++){
+                    books.add(new Book(jsonArray.getJSONObject(i), false));
                 }
             }catch (JSONException e){}
-            Log.d(TAG, "Obtained " + books.size() + " books");
+            //Log.d(TAG, "Obtained " + books.size() + " books");
             notifyFragments();
             return false;
         }
@@ -95,13 +107,12 @@ public class MainActivity extends AppCompatActivity implements ListFragment.item
         if(savedInstanceState != null) {
             currentBook = savedInstanceState.getInt(CURRENT_BOOK_KEY);
             currentlyPlaying = savedInstanceState.getParcelable(CURRENTLY_PLAYING_KEY);
-            Log.d(TAG, "Obtained book number " + currentBook);
+            //Log.d(TAG, "Obtained book number " + currentBook);
         }
         else {
             currentBook = 0;
             currentlyPlaying = null;
         }
-
         playing = true;
 
         if(findViewById(R.id.ListContainer) == null)
@@ -165,12 +176,7 @@ public class MainActivity extends AppCompatActivity implements ListFragment.item
         });
 
         findViewById(R.id.stopButton).setOnClickListener(v ->{
-            if(playerBound){
-                player.stop();
-                progressBar.setProgress(0);
-                nowPlaying.setText("");
-                currentlyPlaying = null;
-            }
+            stopAudio();
         });
 
         progressBar = findViewById(R.id.progressBar);
@@ -178,7 +184,7 @@ public class MainActivity extends AppCompatActivity implements ListFragment.item
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 if(fromUser){
-                    if(playerBound && player.isPlaying()){
+                         if(playerBound && player.isPlaying()){
                         player.seekTo(progress);
                     }
                 }
@@ -211,38 +217,85 @@ public class MainActivity extends AppCompatActivity implements ListFragment.item
         playerBound = false;
         if(currentlyPlaying == null)
             stopService(new Intent(this, AudiobookService.class));
+
+        try {
+            Log.e(TAG, "Writing to file");
+            File file = new File(getFilesDir(), getString(R.string.booksFile));
+            if(!file.exists())
+                file.createNewFile();
+            String path = file.getPath();
+            BufferedWriter writer = new BufferedWriter(new FileWriter(path));
+
+            JSONArray jsonArray = new JSONArray();
+            for(int i = 0; i < books.size(); i++) {
+                jsonArray.put(books.get(i).toJSON());
+            }
+            writer.write(jsonArray.toString());
+            Log.wtf("wrote", jsonArray.toString(6));
+
+            //writer.write("test input");
+            writer.flush();
+            writer.close();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 
     private void getBooks(){
-        Log.d(TAG, "getting books");
-        if(singlePane){
-            Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.ListContainer);
-            if(fragment instanceof ListFragment){
-                books = ((ListFragment)fragment).getBooks();
-            }else{
-                queryForBooks(this.getResources().getString(R.string.url));
+        File file = new File(getFilesDir(), getString(R.string.booksFile));
+        if(file.length() == 0)
+            Log.e(TAG, "file is empty");
+        else {
+            try {
+                if (file.exists()) {
+                    String path = file.getPath();
+                    Log.e("path read", path);
+                    BufferedReader reader = new BufferedReader(new FileReader(path));
+                    String response;
+                    StringBuilder builder = new StringBuilder();
+                    while ((response = reader.readLine()) != null) {
+                        builder.append(response);
+                    }
+                    JSONArray jsonArray = new JSONArray(builder.toString());
+                    for (int i = 0; i < jsonArray.length(); i++) {
+                        books.add(new Book(jsonArray.getJSONObject(i), true));
+                        if(books.get(i).isDownloaded())
+                            books.get(i).setAudio(new File(getExternalFilesDir(DOWNLOAD_SERVICE), books.get(i).getTitle()));
+                    }
+                    Log.d(TAG, "Grabbed books from file");
+
+                    //String test = reader.readLine();
+                    //Log.e(TAG, test==null? "Nothing":test);
+                    reader.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (JSONException e) {
+                e.printStackTrace();
+                file.delete();
+                Log.e(TAG, "file deleted");
             }
-        }else{
-            Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.DetailsContainer);
-            if(fragment instanceof ViewPagerFragment){
-                books = ((ViewPagerFragment)fragment).getBooks();
-            }else{
-                queryForBooks(this.getResources().getString(R.string.url));
-            }
+        }
+
+        if(books.size() < 1){
+            queryForBooks(this.getResources().getString(R.string.url));
         }
     }
 
     private void queryForBooks(final String search){
-        Log.d(TAG, "Querying for books");
-        Log.d(TAG, search);
+        //Log.d(TAG, "Querying for books");
+        //Log.d(TAG, search);
         new Thread(){
             public void run(){
-                Log.d(TAG, "Thread started");
+                //Log.d(TAG, "Thread started");
                 try {
                     URL url = new URL(search);
                     BufferedReader reader = new BufferedReader(
                             new InputStreamReader(url.openStream()));
-                    Log.d(TAG, "Opened Stream");
+                    //Log.d(TAG, "Opened Stream");
                     String response;
                     StringBuilder builder = new StringBuilder();
                     while ((response = reader.readLine()) != null) {
@@ -283,11 +336,72 @@ public class MainActivity extends AppCompatActivity implements ListFragment.item
     public void playPressed(Book book) {
         if(!player.isPlaying()) {
             startService(new Intent(this, AudiobookService.class));
-            player.play(book.getId());
-            currentlyPlaying = book;
-            progressBar.setMax(book.getDuration());
-            nowPlaying.setText(getString(R.string.nowPlaying) + currentlyPlaying.getTitle());
+        }else{
+            stopAudio();
         }
+        playBook(book);
+    }
+
+    private void playBook(Book book){
+        if(book.isDownloaded()){
+            player.play(book.getAudio(), book.getProgress()>10? book.getProgress() - 10 : 0);
+        }else {
+            player.play(book.getId());
+        }
+        currentlyPlaying = book;
+        progressBar.setMax(book.getDuration());
+        nowPlaying.setText(getString(R.string.nowPlaying) + currentlyPlaying.getTitle());
+    }
+
+    private void stopAudio(){
+        if(playerBound){
+            player.stop();
+            currentlyPlaying.setProgress(progressBar.getProgress());
+            progressBar.setProgress(0);
+            nowPlaying.setText("");
+            currentlyPlaying = null;
+        }
+    }
+
+    @Override
+    public void downloadOrDelete(Book book) {
+        if(book.isDownloaded()){
+            File file = new File(getExternalFilesDir(DOWNLOAD_SERVICE), book.getTitle());
+            file.delete();
+            book.deleteAudio();
+        }else{
+            downloadBook(book);
+            book.setAudio(new File(getExternalFilesDir(DOWNLOAD_SERVICE), book.getTitle()));
+        }
+    }
+
+    private void downloadBook(Book book){
+        new Thread(){
+            public void run(){
+                try {
+                    Log.e(TAG, "Download Started");
+                    URL url = new URL(getString(R.string.audioURL) + book.getId());
+                    InputStream reader = url.openStream();
+
+                    File file = new File(getExternalFilesDir(DOWNLOAD_SERVICE), book.getTitle());
+                    file.createNewFile();
+                    FileOutputStream writer = new FileOutputStream(file.getPath());
+
+                    byte[] buffer = new byte[4096];
+
+                    while (reader.read(buffer) != -1) {
+                        writer.write(buffer);
+                    }
+
+                    reader.close();
+                    writer.close();
+
+                    Log.e(TAG, "Download finished");
+                }catch(Exception e){
+                    e.printStackTrace();
+                }
+            }
+        }.start();
     }
 
     @Override

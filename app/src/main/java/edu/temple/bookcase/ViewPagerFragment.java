@@ -60,7 +60,7 @@ public class ViewPagerFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            Log.d("ViewPager", "Grabbing arguments");
+            //Log.d("ViewPager", "Grabbing arguments");
             books = getArguments().getParcelableArrayList(BOOKS_KEY);
             current = getArguments().getInt(CURRENT_KEY);
         }
