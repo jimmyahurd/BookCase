@@ -218,7 +218,7 @@ public class MainActivity extends AppCompatActivity implements ListFragment.item
         super.onStop();
 
         try {
-            Log.e(TAG, "Writing to file");
+            Log.d(TAG, "Writing to file");
             File file = new File(getFilesDir(), getString(R.string.booksFile));
             if(!file.exists())
                 file.createNewFile();
@@ -253,7 +253,6 @@ public class MainActivity extends AppCompatActivity implements ListFragment.item
 
     private void getBooks(){
         File file = new File(getFilesDir(), getString(R.string.booksFile));
-
         if(file.length() == 0)
             Log.e(TAG, "file is empty");
         else {
