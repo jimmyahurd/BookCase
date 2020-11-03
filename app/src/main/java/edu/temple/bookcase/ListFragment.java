@@ -1,7 +1,6 @@
 package edu.temple.bookcase;
 
 import android.content.Context;
-import android.net.Uri;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
@@ -12,24 +11,24 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 
 import java.util.ArrayList;
 
 public class ListFragment extends Fragment {
-    private static final String LIST_KEY = "list";
-    private ArrayList<String> list;
+    private static final String BOOKS_KEY = "books";
+    private ArrayList<Book> books;
 
     private itemSelectedInterface parent;
+    ListFragmentAdapter adapter;
 
     public ListFragment() {
         // Required empty public constructor
     }
 
-    public static ListFragment newInstance(ArrayList<String> items) {
+    public static ListFragment newInstance(ArrayList<Book> items) {
         ListFragment fragment = new ListFragment();
         Bundle args = new Bundle();
-        args.putStringArrayList(LIST_KEY, items);
+        args.putParcelableArrayList(BOOKS_KEY, items);
         fragment.setArguments(args);
         return fragment;
     }
@@ -38,7 +37,7 @@ public class ListFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            list = getArguments().getStringArrayList(LIST_KEY);
+            books = getArguments().getParcelableArrayList(BOOKS_KEY);
         }
     }
 
@@ -51,7 +50,7 @@ public class ListFragment extends Fragment {
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager((Context) parent);
         view.setLayoutManager(layoutManager);
 
-        ListFragmentAdapter adapter = new ListFragmentAdapter(list);
+        adapter = new ListFragmentAdapter(books);
         adapter.setOnItemClickListener(new ListFragmentAdapter.ClickListener() {
             @Override
             public void onItemClick(int position, View v) {
@@ -78,6 +77,14 @@ public class ListFragment extends Fragment {
     public void onDetach() {
         super.onDetach();
         parent = null;
+    }
+
+    public void updateAdapter(){
+        adapter.notifyDataSetChanged();
+    }
+
+    public ArrayList<Book> getBooks(){
+        return books;
     }
 
     public interface itemSelectedInterface {

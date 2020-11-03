@@ -2,6 +2,7 @@ package edu.temple.bookcase;
 
 
 import android.content.Context;
+import android.nfc.Tag;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -10,6 +11,7 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentStatePagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,12 +21,13 @@ import java.util.ArrayList;
 
 public class ViewPagerFragment extends Fragment {
     public static final String BOOKS_KEY = "books";
-    ArrayList<String> books;
+    ArrayList<Book> books;
 
     public static final String CURRENT_KEY = "current";
     int current;
 
     ViewPager viewPager;
+    DetailFragmentPagerAdapter adapter;
 
     PageChangedInterface parent;
 
@@ -32,10 +35,10 @@ public class ViewPagerFragment extends Fragment {
         // Required empty public constructor
     }
 
-    public static ViewPagerFragment newInstance(ArrayList<String> books, int current){
+    public static ViewPagerFragment newInstance(ArrayList<Book> books, int current){
         ViewPagerFragment fragment = new ViewPagerFragment();
         Bundle args = new Bundle();
-        args.putStringArrayList(BOOKS_KEY, books);
+        args.putParcelableArrayList(BOOKS_KEY, books);
         args.putInt(CURRENT_KEY, current);
         fragment.setArguments(args);
         return fragment;
@@ -57,9 +60,11 @@ public class ViewPagerFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            books = getArguments().getStringArrayList(BOOKS_KEY);
+            //Log.d("ViewPager", "Grabbing arguments");
+            books = getArguments().getParcelableArrayList(BOOKS_KEY);
             current = getArguments().getInt(CURRENT_KEY);
         }
+
     }
 
     @Override
@@ -67,10 +72,11 @@ public class ViewPagerFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         viewPager = (ViewPager) inflater.inflate(R.layout.fragment_view_pager, container, false);
-        viewPager.setAdapter(new DetailFragmentPagerAdapter(
+        adapter = new DetailFragmentPagerAdapter(
                 getChildFragmentManager(),
                 FragmentStatePagerAdapter.BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT,
-                books));
+                books);
+        viewPager.setAdapter(adapter);
         viewPager.setCurrentItem(current);
         viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
@@ -91,29 +97,35 @@ public class ViewPagerFragment extends Fragment {
         parent = null;
     }
 
+    public ArrayList<Book> getBooks(){
+        return books;
+    }
+
+    public void updateAdapter(){
+        adapter.notifyDataSetChanged();
+    }
+
     private class DetailFragmentPagerAdapter extends FragmentStatePagerAdapter {
-        ArrayList<DetailsFragment> fragments;
+        ArrayList<Book> books;
 
-        public DetailFragmentPagerAdapter(@NonNull FragmentManager fm, int behavior, ArrayList<String> books) {
+        public DetailFragmentPagerAdapter(@NonNull FragmentManager fm, int behavior, ArrayList<Book> books) {
             super(fm, behavior);
-            createFragments(books);
-        }
-
-        private void createFragments(ArrayList<String> books){
-            fragments = new ArrayList<DetailsFragment>();
-            for(int i = 0; i < books.size(); i++){
-                fragments.add(DetailsFragment.newInstance(books.get(i)));
-            }
+            this.books = books;
         }
 
         @Override
         public Fragment getItem(int position) {
-            return fragments.get(position);
+            return DetailsFragment.newInstance(books.get(position));
         }
 
         @Override
         public int getCount() {
             return books.size();
+        }
+
+        @Override
+        public int getItemPosition(@NonNull Object object) {
+            return POSITION_NONE;
         }
     }
 

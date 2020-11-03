@@ -1,15 +1,22 @@
 <resources>
     <string name="app_name">BookCase</string>
-    <string-array name="books">
-        <item>Don Quixote</item>
-        <item>A Tale of Two Cities</item>
-        <item>The Lord of the Rings</item>
-        <item>The Little Prince</item>
-        <item>Harry Potter and the Sorcerer\'s Stone</item>
-        <item>And Then There Were None</item>
-        <item>The Da Vinci Code</item>
-        <item>The Hobbit</item>
-        <item>She: A History of Adventure</item>
-        <item>The Lion, the Witch, and the Wardrobe</item>
-    </string-array>
+    <string name="url">https://kamorris.com/lab/audlib/booksearch.php</string>
+    <string name="searchButton">Search</string>
+    <string name="playButton">Play</string>
+    <string name="stopButton">Stop</string>
+    <string name="pauseButton">Pause</string>
+    <string name="nowPlaying">Now Playing:\n</string>
+    <string name="downloadButton">Download</string>
+    <string name="deleteButton">Delete</string>
+    <string name="booksFile">books</string>
+    <string name="audioURL">https://kamorris.com/lab/audlib/download.php?id=</string>
+
+    <string name="id">book_id</string>
+    <string name="title">title</string>
+    <string name="author">author</string>
+    <string name="duration">duration</string>
+    <string name="published">published</string>
+    <string name="cover">cover_url</string>
+    <string name="downloaded">downloaded</string>
+    <string name="progress">progress</string>
 </resources>
